@@ -3,6 +3,7 @@ function injectGitFileStatus()
     const timeout = 5000;
     const addedColor = "#98C379";
     const modifiedColor = "#D19A66";
+    const stagedColor = "#E06059";
     const ignoredOpacity = "0.4";
 
     const explorer = document.getElementById("workbench.view.explorer");
@@ -101,12 +102,13 @@ function injectGitFileStatus()
                                         if (!error)
                                         {
                                             const files = stdout.split("\n");
-
-                                            const added = files.filter(name => { return name.startsWith("?? ") || name.startsWith("A  ") || name.startsWith("AM "); }).map(name => { return normalizePath(name); });
+                                            
+                                            const added = files.filter(name => { return name.startsWith("?? ") || name.startsWith("AM "); }).map(name => { return normalizePath(name); });
                                             const modified = files.filter(name => { return name.startsWith(" M ") || name.startsWith("M  ") || name.startsWith("MM "); }).map(name => { return normalizePath(name); });
                                             const ignored = files.filter(name => { return name.startsWith("!! "); }).map(name => { return normalizePath(name); });
                                             const renamed = files.filter(name => { return name.startsWith("R  "); }).map(name => { return normalizePathClean(name.split(" -> ")[1]); });
-
+                                            const staged = files.filter(name => { return name.startsWith("A "); }).map(name => { return normalizePath(name); });
+                                            
                                             let html = "";
     
                                             const addedFolders = new Set();
@@ -150,7 +152,12 @@ function injectGitFileStatus()
                                             {
                                                 html += getCssEntry(gitRoot, modifiedFolder, `color:${modifiedColor};`);
                                             });
-
+                                            
+                                            staged.forEach(stagedFile =>
+                                            {
+                                                html += getCssEntry(gitRoot, stagedFile, `color:${stagedColor};`);
+                                            });
+                                            
                                             // run git status
                                             const gitStatusCommand1 = "git ls-files --others --exclude-standard";
                                             const gitStatusOptions1 = { cwd: resolveHome(gitRoot) }
